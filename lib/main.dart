@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
+import 'package:mppt_esp32/screen/dashboard_screen.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -14,7 +11,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.teal,
       ),
-      home: MyHomepage(title: 'MPPT Solar Charge Controller By Esp 32'),
+      home: MyHomepage(title: 'MPPT'),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -27,37 +24,7 @@ class MyHomepage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('MPPT Solar Charge Controller By Esp 32'),
-      ),
-      drawer: Container(
-        width: 250,
-        color: Colors.blue,
-      ),
-      body: SafeArea(
-        child: ListView(
-          children: <Widget>[
-            Container(
-              child: Solacell(name: "Sola Cell", image: "solacell.png"),
-              height: 250,
-              color: Colors.white,
-            ),
-            Container(
-              child: Battery(name: "Battery", image: "battery.png"),
-              height: 250,
-              color: Colors.white,
-            ),
-            Container(child: SwitchWidget() //สวิตซ์เลื่อนเปิดปิด
-                ),
-            Container(
-              height: 250,
-              color: Colors.white,
-            ),
-          ],
-        ),
-      ),
-    );
+    return DashboardScreen();
   }
 }
 
