@@ -20,22 +20,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
   FirebaseDatabase _firebaseDatabase = FirebaseDatabase.instance;
 
   fetchSolarCellData() async {
-    DatabaseReference databaseReference = _firebaseDatabase.reference().child("SolaCell");
-    await databaseReference.once().then(
-      (value) {
-        Map<dynamic, dynamic> values = value.value;
-        values.forEach(
-          (key, value) {
-            print("KEY : $key | VALUE : $value");
-            voltageList.add(value["Voltage"].toDouble());
-            ampList.add(value["Current"].toDouble());
-            wattList.add(value["Power"].toDouble());
-          },
-        );
+    DatabaseReference databaseReference = _firebaseDatabase.reference();
+    // DatabaseReference databaseReference = _firebaseDatabase.reference().child("SolarCell");
+    // await databaseReference.once().then(
+    //   (snapshot) {
+    //     Map<dynamic, dynamic> values = snapshot.value;
+    //     values.forEach(
+    //       (key, value) {
+    //         print("KEY : $key | VALUE : $value");
+    //         voltageList.add(value["Voltage"].toDouble());
+    //         ampList.add(value["Current"].toDouble());
+    //         wattList.add(value["Power"].toDouble());
+    //       },
+    //     );
+    //     setState(() {
+    //       volt = voltageList[0];
+    //       amp = ampList[0];
+    //       watt = wattList[0];
+    //     });
+    //   },
+    // );
+
+    var query = databaseReference.child('SolarCell').orderByChild('Created_Time').limitToLast(1);
+    await query.onChildAdded.forEach(
+      (element) {
+        Map<dynamic, dynamic> solarValue = element.snapshot.value;
         setState(() {
-          volt = voltageList[0];
-          amp = ampList[0];
-          watt = wattList[0];
+          volt = solarValue["Voltage"];
+          amp = solarValue["Current"];
+          watt = solarValue["Power"];
         });
       },
     );
@@ -48,7 +61,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     /* Call for first time */
     fetchSolarCellData();
     /* Call timer to iterable function */
-    timer = Timer.periodic(Duration(seconds: 5), (timer) => fetchSolarCellData());
+    timer = Timer.periodic(Duration(seconds: 20), (timer) => fetchSolarCellData());
+  }
+
+  Future refreshQuery() async {
+    await Future.delayed(Duration(seconds: 2), () {
+      fetchSolarCellData();
+    });
   }
 
   @override
@@ -62,38 +81,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(10),
-          child: ListView(
-            children: <Widget>[
-              MPTTDataOverviewCardWidget(
-                icon: Image.asset("images/solacell.png"),
-                dataTitle: "SOLAR CELL",
-                children: Column(
-                  children: [
-                    SizedBox(height: 5),
-                    MPTTDataCardWidget(dataValue: "VOLTAGE : $volt V"),
-                    SizedBox(height: 5),
-                    MPTTDataCardWidget(dataValue: "CURRENT : $amp A"),
-                    SizedBox(height: 5),
-                    MPTTDataCardWidget(dataValue: "POWER : $watt W"),
-                  ],
+          child: RefreshIndicator(
+            onRefresh: refreshQuery,
+            child: ListView(
+              children: <Widget>[
+                MPTTDataOverviewCardWidget(
+                  icon: Image.asset("images/solacell.png"),
+                  dataTitle: "SOLAR CELL",
+                  children: Column(
+                    children: [
+                      SizedBox(height: 5),
+                      MPTTDataCardWidget(dataValue: "VOLTAGE : $volt V"),
+                      SizedBox(height: 5),
+                      MPTTDataCardWidget(dataValue: "CURRENT : $amp A"),
+                      SizedBox(height: 5),
+                      MPTTDataCardWidget(dataValue: "POWER : $watt W"),
+                    ],
+                  ),
                 ),
-              ),
-              MPTTDataOverviewCardWidget(
-                icon: Image.asset("images/battery.png"),
-                dataTitle: "BATTERY",
-                children: Column(
-                  children: [
-                    SizedBox(height: 5),
-                    MPTTDataCardWidget(dataValue: "VOLTAGE : 00.0 V"),
-                    SizedBox(height: 5),
-                    MPTTDataCardWidget(dataValue: "CHARGE TYPE : ??"),
-                    SizedBox(height: 5),
-                    MPTTDataCardWidget(dataValue: "PERCENTAGE : %"),
-                  ],
+                MPTTDataOverviewCardWidget(
+                  icon: Image.asset("images/battery.png"),
+                  dataTitle: "BATTERY",
+                  children: Column(
+                    children: [
+                      SizedBox(height: 5),
+                      MPTTDataCardWidget(dataValue: "VOLTAGE : 00.0 V"),
+                      SizedBox(height: 5),
+                      MPTTDataCardWidget(dataValue: "CHARGE TYPE : ??"),
+                      SizedBox(height: 5),
+                      MPTTDataCardWidget(dataValue: "PERCENTAGE : %"),
+                    ],
+                  ),
                 ),
-              ),
-              // __solarCellWidget(name: "SOLAR CELL", image: "solacell.png"),
-            ],
+                // __solarCellWidget(name: "SOLAR CELL", image: "solacell.png"),
+              ],
+            ),
           ),
         ),
       ),
